@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.10/ngStorage.js"></script>
-    <script src="//cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.6.6/firebase.js"></script>
+    <script>
+        // Initialize the Firebase SDK
+        var config = {
+            apiKey: '<your-api-key>',
+            authDomain: '<your-auth-domain>',
+            databaseURL: '<your-database-url>',
+            storageBucket: '<your-storage-bucket>'
+        };
+        firebase.initializeApp(config);
+    </script>
     <script>
 
         var app = angular.module('app', ['ngStorage']);
@@ -34,18 +43,16 @@
 
             // use Firebase library to login to facebook
             function facebookLogin() {
-                var ref = new Firebase(url);
-                ref.authWithOAuthPopup('facebook', function (error, authData) {
-                    if (error) {
-                        console.log('Log in to Facebook Failed', error);
-                        vm.message = 'Log in to Facebook Failed. ' + error;
-                    } else {
+                var provider = new firebase.auth.FacebookAuthProvider();
+                firebase.auth().signInWithPopup(provider).then(function (authData) {
                         console.log('Logged in to Facebook');
                         vm.message = 'Logged in to Facebook.';
                         $timeout(function() { // invokes $scope.$apply()
                             vm.fbData = authData;
                         });
-                    }
+                }, function(error) {
+                    console.log('Log in to Facebook Failed', error);
+                    vm.message = 'Log in to Facebook Failed. ' + error;
                 });
             }
 
@@ -74,11 +81,11 @@
     <br />
 
     <!-- click profile pic to display raw data from facebook -->
-    <div>{{ vm.fbData.facebook.displayName }}</div>
+    <div>{{ vm.fbData.user.displayName }}</div>
     <div ng-click="vm.showData=!vm.showData">
-        <img ng-show="vm.fbData.facebook.profileImageURL" ng-src="{{ vm.fbData.facebook.profileImageURL }}">
+        <img ng-show="vm.fbData.user.photoURL" ng-src="{{ vm.fbData.user.photoURL }}">
     </div>
-    <pre ng-show="vm.showData" ng-bind="vm.fbData.facebook | json"></pre>
+    <pre ng-show="vm.showData" ng-bind="vm.fbData | json"></pre>
 
 </div>
 
